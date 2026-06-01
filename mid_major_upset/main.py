@@ -161,6 +161,11 @@ def poll_sport(sport_key: str, date_str: str, season_year: int, dry_run: bool = 
             db.mark_game_processed(conn, game_id, is_upset=upset is not None)
             conn.commit()
 
+        # Ensure every team seen this poll has a team_twitter row (NULL handle until researched)
+        stubs = db.insert_team_twitter_stubs(conn)
+        if stubs:
+            log.info("[%s] Added %d team_twitter stub row(s)", sport_key, stubs)
+
         db.complete_poll_log(conn, log_id, len(events), upsets_found)
         conn.commit()
 
