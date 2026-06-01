@@ -52,13 +52,11 @@ def compose_tweet(upset: Upset, context: UpsetContext, winner_handle: str | None
     def build(with_handle: bool, with_standing: bool, with_tag: bool) -> str:
         winner_name = f"{winner_loc} ({handle})" if (with_handle and handle) else winner_loc
         winner_str = _rank_prefix(upset.winner.rank, winner_name)
-        lines = [
-            f"{sport_display} Upset! {winner_str} defeated {loser_str} {upset.winner.score}-{upset.loser.score}.",
-            f"This is the {_ordinal(context.sport_upset_total)} mid-major upset in {sport_display.lower()} this year.",
-        ]
+        headline = f"{sport_display} Upset! {winner_str} defeated {loser_str} {upset.winner.score}-{upset.loser.score}."
+        season_line = f"This is the {_ordinal(context.sport_upset_total)} mid-major upset in {sport_display.lower()} this year."
         if with_standing:
-            lines.append(standing)
-        text = "\n".join(lines)
+            season_line = f"{season_line} {standing}"
+        text = f"{headline}\n\n{season_line}"
         if with_tag and tag:
             text = f"{text}\n{tag}"
         return text
