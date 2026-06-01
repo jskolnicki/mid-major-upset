@@ -124,19 +124,6 @@ CREATE TABLE IF NOT EXISTS tweet_history (
     FOREIGN KEY (upset_id) REFERENCES upsets(id)
 );
 
-CREATE TABLE IF NOT EXISTS poll_log (
-    id           INT AUTO_INCREMENT PRIMARY KEY,
-    sport_key    VARCHAR(20) NOT NULL,
-    poll_date    VARCHAR(10) NOT NULL,
-    started_at   VARCHAR(50) NOT NULL,
-    completed_at VARCHAR(50),
-    events_found INT DEFAULT 0,
-    upsets_found INT DEFAULT 0,
-    errors       TEXT,
-    status       VARCHAR(20) NOT NULL DEFAULT 'running',
-    KEY idx_poll_log_sport_date (sport_key, poll_date)
-);
-
 -- Indexes for hot query paths
 -- games: unprocessed-final scan (sport_key + game_date + status + processed)
 CREATE INDEX IF NOT EXISTS idx_games_date_status ON games (sport_key, game_date, status, processed);

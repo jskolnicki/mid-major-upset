@@ -23,8 +23,11 @@ from .detector import build_context, detect_upset
 from .espn import fetch_scoreboard
 from .twitter import compose_tweet, get_twitter_client, post_tweet
 
+# Interactive runs (a real terminal) log the full INFO poll trail; under cron, where stderr
+# is redirected to a file, only ERROR-level lines (tracebacks from log.exception) are written
+# so cron.log stays quiet. Tweet success/failure is recorded in the tweet_history table.
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.INFO if sys.stderr.isatty() else logging.ERROR,
     format="%(asctime)s %(levelname)-8s %(name)s: %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
@@ -69,9 +72,6 @@ def poll_sport(sport_key: str, date_str: str, season_year: int, dry_run: bool = 
     """Poll a single sport for a single date. Returns number of upsets found."""
     conn = db.get_connection()
     db.init_db(conn)
-
-    log_id = db.start_poll_log(conn, sport_key, date_str)
-    conn.commit()
 
     twitter_client = None if dry_run else get_twitter_client()
     upsets_found = 0
@@ -166,13 +166,8 @@ def poll_sport(sport_key: str, date_str: str, season_year: int, dry_run: bool = 
         if stubs:
             log.info("[%s] Added %d team_twitter stub row(s)", sport_key, stubs)
 
-        db.complete_poll_log(conn, log_id, len(events), upsets_found)
-        conn.commit()
-
-    except Exception as e:
+    except Exception:
         log.exception("Poll failed for %s on %s", sport_key, date_str)
-        db.fail_poll_log(conn, log_id, str(e))
-        conn.commit()
 
     finally:
         conn.close()

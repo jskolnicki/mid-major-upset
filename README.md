@@ -75,6 +75,8 @@ On the VPS itself, set up a cron job that runs **every 4 minutes, 24/7**:
 */4 * * * * cd /opt/mid-major-upset && venv/bin/python -m mid_major_upset >> /opt/mid-major-upset/logs/cron.log 2>&1
 ```
 
+Because the cron redirects output to a file (not a terminal), the app logs at `ERROR` and `cron.log` collects only tracebacks — a healthy run writes nothing, so the file grows only when something fails (no rotation needed). Run the command by hand in a terminal and you get the full `INFO` poll trail instead. Tweet success/failure is recorded in the `tweet_history` table either way.
+
 Run cron unconditionally — **do not** restrict the cron hours. The app gates its own active window in **Eastern time** (`SPORT_SEASONS` + `SPORT_POLL_HOURS`, currently 10 AM–5 AM ET), using `ZoneInfo("America/New_York")`, so it stays correct even though the VPS clock is UTC. Outside the active window or off-season, the run exits immediately without hitting ESPN.
 
 Each auto run polls **yesterday and today** (ET). A West Coast/Hawaii game still in progress at ET midnight finishes under the *previous* ET date on ESPN's scoreboard, so polling both dates guarantees those late finals aren't missed; already-processed games are skipped, so the extra fetch is cheap.

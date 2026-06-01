@@ -345,29 +345,3 @@ def insert_tweet(
            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
         (upset_id, tweet_text, tweet_type, twitter_tweet_id, status, error_message, now, now if status == "sent" else None),
     )
-
-
-# ── Poll Log ──────────────────────────────────────────────────────────
-
-def start_poll_log(conn: pymysql.Connection, sport_key: str, poll_date: str) -> int:
-    return _execute(
-        conn,
-        "INSERT INTO poll_log (sport_key, poll_date, started_at, status) VALUES (%s, %s, %s, 'running')",
-        (sport_key, poll_date, _now()),
-    )
-
-
-def complete_poll_log(conn: pymysql.Connection, log_id: int, events_found: int, upsets_found: int) -> None:
-    _execute(
-        conn,
-        "UPDATE poll_log SET completed_at=%s, events_found=%s, upsets_found=%s, status='completed' WHERE id=%s",
-        (_now(), events_found, upsets_found, log_id),
-    )
-
-
-def fail_poll_log(conn: pymysql.Connection, log_id: int, error: str) -> None:
-    _execute(
-        conn,
-        "UPDATE poll_log SET completed_at=%s, errors=%s, status='failed' WHERE id=%s",
-        (_now(), error, log_id),
-    )
