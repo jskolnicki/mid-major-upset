@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Environment
+.env
+
+# Logs (keep the directory, ignore its contents — cron writes here)
+logs/*
+!logs/.gitkeep
+
+# Local SQLite data (if ever used)
+data/
+
+# IDE
+.vscode/
+.idea/
