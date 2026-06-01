@@ -40,6 +40,15 @@ Seed the reference data (conferences, Notre Dame override):
 python setup/seed_db.py --seasons 2025 2026
 ```
 
+### Twitter handles
+
+Each team gets a `team_twitter` row automatically: every poll, `insert_team_twitter_stubs`
+adds a `NULL`-handle stub for any team in `teams` that lacks one, so the table stays aligned
+to the teams actually seen in games. Handles and hashtags are filled in **manually** in the
+database (e.g. `UPDATE team_twitter SET twitter_handle='KentStBSB' WHERE ...`). There is no
+CSV import step — `compose_tweet` simply omits the @handle/hashtag for any team whose row is
+still `NULL`.
+
 ## Usage
 
 ```bash

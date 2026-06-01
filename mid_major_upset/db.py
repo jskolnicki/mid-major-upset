@@ -191,16 +191,36 @@ def upsert_team_handle(
     conn: pymysql.Connection,
     sport_key: str,
     espn_team_id: str,
-    twitter_handle: str,
+    twitter_handle: str | None,
     twitter_hashtag: str | None = None,
 ) -> None:
     _execute(
         conn,
         """INSERT INTO team_twitter (sport_key, espn_team_id, twitter_handle, twitter_hashtag)
            VALUES (%s, %s, %s, %s)
-           ON DUPLICATE KEY UPDATE twitter_handle=VALUES(twitter_handle), twitter_hashtag=VALUES(twitter_hashtag)""",
+           ON DUPLICATE KEY UPDATE
+               twitter_handle  = COALESCE(VALUES(twitter_handle),  twitter_handle),
+               twitter_hashtag = COALESCE(VALUES(twitter_hashtag), twitter_hashtag)""",
         (sport_key, espn_team_id, twitter_handle, twitter_hashtag),
     )
+
+
+def insert_team_twitter_stubs(conn: pymysql.Connection) -> int:
+    """Insert a NULL-handle stub row for every team not yet in team_twitter.
+
+    Safe to re-run — only adds missing rows, never touches existing ones.
+    Returns the number of rows inserted.
+    """
+    with conn.cursor() as cur:
+        cur.execute(
+            """INSERT INTO team_twitter (sport_key, espn_team_id, twitter_handle, twitter_hashtag)
+               SELECT DISTINCT t.sport_key, t.espn_team_id, NULL, NULL
+               FROM teams t
+               LEFT JOIN team_twitter tt
+                   ON t.sport_key = tt.sport_key AND t.espn_team_id = tt.espn_team_id
+               WHERE tt.espn_team_id IS NULL"""
+        )
+        return cur.rowcount
 
 
 # ── Games ─────────────────────────────────────────────────────────────
